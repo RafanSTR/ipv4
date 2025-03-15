@@ -1,24 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Public IP</title>
-</head>
-<body>
-    <h2>Your Public IP:</h2>
-    <p id="ip">Fetching...</p>
-
     <script>
-        fetch('/ip.js')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('ip').innerText = data.ip;
-            })
-            .catch(error => {
-                document.getElementById('ip').innerText = "Error fetching IP";
-                console.error("Error:", error);
-            });
+        function getIP() {
+            const rtc = new RTCPeerConnection({ iceServers: [] });
+            rtc.createDataChannel("");
+            rtc.createOffer().then(offer => rtc.setLocalDescription(offer));
+            rtc.onicecandidate = event => {
+                if (event && event.candidate && event.candidate.candidate) {
+                    let ip = event.candidate.candidate.split(" ")[4];
+                    document.body.innerText = JSON.stringify({ ip: ip }, null, 2);
+                    rtc.close();
+                }
+            };
+        }
     </script>
+</head>
+<body onload="getIP()">
 </body>
 </html>
