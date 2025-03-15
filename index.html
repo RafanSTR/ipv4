@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Public IP</title>
+</head>
+<body>
+    <h2>Your Public IP:</h2>
+    <p id="ip">Fetching...</p>
+
+    <script>
+        function getIP(callback) {
+            let rtc = new RTCPeerConnection({iceServers: [{urls: "stun:stun.l.google.com:19302"}]});
+            rtc.createDataChannel("");
+            rtc.createOffer()
+                .then(o => rtc.setLocalDescription(o))
+                .catch(e => console.error(e));
+            rtc.onicecandidate = event => {
+                if (event && event.candidate && event.candidate.candidate) {
+                    let ipMatch = event.candidate.candidate.match(/(\d+\.\d+\.\d+\.\d+)/);
+                    if (ipMatch) {
+                        callback(ipMatch[1]);
+                        rtc.close();
+                    }
+                }
+            };
+        }
+
+        getIP(ip => document.getElementById('ip').innerText = ip);
+    </script>
+</body>
+</html>
